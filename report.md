@@ -96,3 +96,60 @@ No problems encountered; the inverse transform sampling method directly produced
 ## Results (speed tests etc.)
 
 The resulting plot clearly confirms that generating time intervals via the inverse cumulative distribution function can reproduce Poisson-Kac interval statistics successfully.
+
+
+
+
+
+
+
+# Poisson-Kac Task 3
+
+In this task, we simulate a 1D Poisson-Kac process trajectory $x(t)$ of an atom starting at $t=0$ at position $x(0)=0$ with initial velocity $v=s$. Velocity reversal events occur at random time intervals $\tau_i = -\ln(1-P)/\mu$, where $P \sim \text{Uniform}(0, 1)$ and $\mu$ is the event rate. Between reversal events, the atom moves at constant speed $s$ with alternating directions ($v \to -v$). We compare the event-driven discrete trajectory at times $t = 0, \tau_1, \tau_1+\tau_2, \dots$ with an equidistantly sampled trajectory evaluated at fixed time steps $t_j = j \Delta t$ (with $\Delta t \ll \mu^{-1}$) to validate the algorithm.
+
+## Layout of the algorithm, functions to be created
+
+The code relies on numpy for random number generation and array manipulation, and matplotlib.pyplot for visual validation. The two main functions of this task are:
+
+      def generate_event_trajectory(N, rate_mu, speed_s):
+            # Generates N random time intervals tau using inverse transform sampling,
+            # tracks velocity direction reversals (v -> -v), and calculates the 
+            # exact particle position x(t) at each event time.
+            return t_events, x_events
+
+      def interpolate_equidistant_trajectory(t_events, x_events, speed_s, dt):
+            # Constructs the continuous trajectory x(t) at fixed, regular time
+            # intervals t_j = j * dt by performing piece-wise linear interpolation
+            # between reversal events.
+            return t_grid, x_grid
+
+      def main_function():
+            # Sets parameters (N=40, mu=10, s=1, dt=0.25/mu), coordinates the
+            # trajectory generation, overlays both representations on a single plot,
+            # and saves the resulting figure.
+
+## How to run the code
+
+To run the code, you need to install numpy and matplotlib in your active Python environment and execute:
+
+      python3 task3.py
+
+Parameters ($N = 40$, $\mu = 10$, $s = 1$, and $\Delta t = 0.25/\mu$) are predefined inside the code.
+
+## Resulting files
+
+task3_trajectory.png: This is a generated figure which shows the visual overlay of the discrete reversal events (open circles) and the equidistantly sampled trajectory (dotted line with points).
+
+## Successful tests
+
+It has been verified that all calculated intervals $\tau_i$ strictly follow the prescribed distribution $\tau = -\ln(1-P)/\mu$ and remain positive.
+We can confirm that velocity alternates correctly ($+s, -s, +s, \dots$) after every event.
+The continuous piecewise linear trajectory constructed at regular intervals $t_j = j \Delta t$ passes directly through all event positions $(t_{\text{event}}, x_{\text{event}})$, confirming the validity of the interpolation algorithm both numerically and visually.
+
+## Problems
+
+Handling boundary conditions between discrete event steps during continuous time interpolation required precise interval lookup logic (np.searchsorted). Potential floating-point inaccuracies when matching fixed grid times $t_j$ with event times were successfully resolved.
+
+## Results (speed tests etc.)
+
+The generated plot demonstrates exact agreement between the continuous piecewise linear path evaluated at regular time steps $\Delta t$ and the discrete reversal event locations, verifying the correctness of the spatial velocity-reversal algorithm.
