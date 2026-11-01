@@ -155,6 +155,129 @@ Handling boundary conditions between discrete event steps during continuous time
 The generated plot demonstrates exact agreement between the continuous piecewise linear path evaluated at regular time steps $\Delta t$ and the discrete reversal event locations, verifying the correctness of the spatial velocity-reversal algorithm.
 
 
+
+## Task 4
+In this task, we simulated the Poisson-Kac trajectory $x(t)$ directly at fixed time steps $t = 0, \Delta t, 2\Delta t, \dots$. Unlike Task 3, we did not generate the time intervals $\tau$ first. Instead, the velocity flips after each step with a fixed probability
+
+$$f = 1 - e^{-\mu\Delta t}.$$
+
+To test the algorithm, we saved the times when the velocity flips and compared the time between flips with $p(\tau) = \mu e^{-\mu\tau}$.
+
+## Layout of the algorithm and functions
+The code uses numpy for the random numbers and matplotlib.pyplot for the plots. The parameters are $\mu = 10$, $s = 1$, $\Delta t = 0.01/\mu = 0.001$ and $100\,000$ steps.
+
+The particle starts at $x(0) = 0$ with velocity $v = s$. In each step:
+
+1. The new position is calculated:
+$$x(j\Delta t) = x((j-1)\Delta t) + v\,\Delta t$$
+2. A random number $r$ between 0 and 1 is drawn.
+3. If $r < f$, the velocity flips ($v \to -v$) and the step number is saved.
+
+The time between two flips is the difference of the saved step numbers times $\Delta t$. These times were plotted as a histogram together with the theoretical curve $p(\tau) = \mu e^{-\mu\tau}$.
+
+## How to run the code
+Install numpy and matplotlib and run:
+
+    Poisson-Kac_VibeCoders_Notebook.ipynb #Task 4
+
+## Resulting files
+- images/task4_poisson-kac-trajectory_Nicola.png: the trajectory $x(t)$ for the first 4000 steps.
+- images/task4_waiting_times_Nicola.png: histogram of the times between flips compared with $p(\tau)$.
+
+![Task 4: Poisson-Kac trajectory](images/task4_poisson-kac-trajectory_Nicola.png)
+
+![Task 4: Waiting times](images/task4_waiting_times_Nicola.png)
+
+## Successful tests
+The trajectory has straight lines going up and down with slope $\pm s$, like in Task 3.
+The histogram follows the theoretical curve.
+The mean time between flips is close to $1/\mu = 0.1$.
+
+## Results and limitations
+The algorithm works: the trajectory looks like Task 3 and the times between flips follow the exponential curve.
+The simulated times can only be multiples of $\Delta t$, so the result is not exactly exponential. With about 1000 flips, the histogram is still a bit noisy for large $\tau$, because only a few flips fall into the bins.
+
+
+
+## Task 5
+In this task, we used the step algorithm from Task 4 inside a fixed interval $[0, L]$. The particle starts at $x(0) = x_0$ with velocity $v = s$ and moves until it reaches $x \leq 0$ or $x \geq L$. We calculated the probability $\pi_+^{(L)}(x_0)$ that the particle leaves the interval at $x = L$ and compared it with the theoretical prediction
+
+$$\pi_+^{(L)}(x_0) = \frac{s + \mu x_0}{s + \mu L}.$$
+
+## Layout of the algorithm and functions
+The code uses numpy for the random numbers and matplotlib.pyplot for the plots. The parameters are $L = 10$, $\mu = 2$, $s = 1$ and $\Delta t = 0.01/\mu = 0.005$.
+
+The function probability_exit(x0) runs 2000 simulations for one starting position $x_0$. In each simulation:
+
+1. The particle starts at $x = x_0$ with velocity $v = s$.
+2. It moves with the algorithm from Task 4: $x \to x + v\,\Delta t$, then the velocity flips with probability $f = 1 - e^{-\mu\Delta t}$.
+3. If $x \leq 0$, the particle left at 0. If $x \geq L$, it left at $L$. In both cases the simulation stops.
+
+The function returns the number of simulations that ended at $L$ divided by 2000. This was done for 11 starting positions $x_0 = 0, 1, \dots, 10$.
+
+## How to run the code
+Install numpy and matplotlib and run:
+
+    Poisson-Kac_VibeCoders_Notebook.ipynb #Task 5
+
+## Resulting files
+- images/task5_exit_probability_Nicola.png: simulated $\pi_+^{(L)}(x_0)$ compared with the theory.
+
+![Task 5: Exit probability at L](images/task5_exit_probability_Nicola.png)
+
+## Successful tests
+The simulated points lie close to the theoretical straight line.
+At $x_0 = L$, the particle leaves at $L$ in the first step, so $\pi_+^{(L)}(L) = 1$, as the theory predicts.
+At $x_0 = 0$, the particle does not leave right away, because it starts moving to the right. The probability is small but not zero.
+
+## Results and limitations
+The simulation agrees with the theory: the probability of leaving at $L$ grows linearly with $x_0$.
+
+
+
+
+## Task 6
+In this task, we used the same algorithm as in Task 5 to calculate the mean time $T_\pm(x_0)$ that the particle stays inside the interval $[0, L]$ when it starts at $x_0$ with velocity $\pm s$. We compared the average of both with the theoretical prediction
+
+$$\frac{T_+(x_0) + T_-(x_0)}{2} = \frac{L}{2s} + \frac{\mu x_0 (L - x_0)}{s^2}.$$
+
+In the same simulations, we also checked the relation
+
+$$\frac{\pi_+^{(L)}(x_0) + \pi_-^{(L)}(x_0)}{2}\,L - x_0 = \frac{s(L - 2x_0)}{2(s + \mu L)}.$$
+
+## Layout of the algorithm and functions
+The code uses numpy for the random numbers and matplotlib.pyplot for the plots. The parameters are $L = 10$, $\mu = 2$, $s = 1$ and $\Delta t = 0.01/\mu = 0.005$.
+
+The function exit_statistics(x0, v0) runs 100 simulations for one starting position $x_0$ and starting velocity $v_0 = \pm s$. In each simulation:
+
+1. The particle starts at $x = x_0$ with velocity $v_0$.
+2. It moves with the algorithm from Task 4, and the number of steps is counted.
+3. When the particle reaches $x \leq 0$ or $x \geq L$, the simulation stops. The time in the interval is the number of steps times $\Delta t$, and we save whether it left at $L$ (1) or at 0 (0).
+
+The function returns the mean time and the fraction of runs that left at $L$. It was called for 11 starting positions $x_0 = 0, 1, \dots, 10$, once with $v_0 = +s$ and once with $v_0 = -s$. This gives $T_+$, $T_-$, $\pi_+^{(L)}$ and $\pi_-^{(L)}$ for each $x_0$.
+
+## How to run the code
+Install numpy and matplotlib and run:
+
+    Poisson-Kac_VibeCoders_Notebook.ipynb #Task 6
+
+
+## Resulting files
+- images/task6_residence_time_Nicola.png: mean time in the interval compared with the theory.
+- images/task6_exit_probability_relation_Nicola.png: exit probability relation compared with the theory.
+
+![Task 6: Mean residence time](images/task6_residence_time_Nicola.png)
+
+![Task 6: Exit probability relation](images/task6_exit_probability_relation_Nicola.png)
+
+## Successful tests
+The simulated mean time follows the theoretical curve: about 5 at the edges and about 55 in the middle.
+For the second relation, the simulated points scatter around the theoretical line, but they roughly follow its trend. With more simulations, the results would likely get closer to the theory.
+
+## Results and limitations
+The simulation agrees with the theory for the mean time. The run time grows linearly with the number of simulations. On top of that, the particle stays much longer in the interval than in Task 5. Even with 2000 runs, the second plot is very noisy. To see the relation clearly, several thousand runs per point would be needed, whcih would take a long time for this algorithm.
+
+
 ## Task 7
 In this task, it is asked to calculate the velocity autocorrelation of a Poisson-Kac particle. This quantity is a description of how the velocity loses memory of its initial direction as the time goes on. The simulation created was compared with the theoretical prediction $$C_v(t)=s^2e^{-2\mu t}.$$
 
